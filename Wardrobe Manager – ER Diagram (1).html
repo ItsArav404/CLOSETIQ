@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Wardrobe Manager – ER Diagram</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ink:#0F172A;--mute:#475569;--line:#CBD5E1;--bg:#F1F5F9;--card:#fff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 24px 40px}
+.top{max-width:1500px;margin:0 auto 18px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+.sub{margin:4px 0 0;color:var(--mute);font-size:15px}
+.zoom{display:flex;gap:6px}
+.zoom button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 14px;font:600 14px Inter,sans-serif;cursor:pointer}
+.zoom button:hover{background:#E2E8F0}
+.legend{max-width:1500px;margin:0 auto 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:12px 36px;align-items:center;font-size:14px}
+.legend h3{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.lg{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.it{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.sw{width:14px;height:14px;border-radius:4px}
+.bd{font:700 10px Inter,sans-serif;border-radius:4px;padding:2px 5px}
+.wrap{max-width:1500px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:auto;background-image:radial-gradient(#E2E8F0 1px,transparent 1px);background-size:22px 22px}
+svg text{font-family:Inter,system-ui,sans-serif}
+.t{filter:drop-shadow(0 3px 6px rgba(15,23,42,.14))}
+.notes{max-width:1500px;margin:18px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.n{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;border-top-width:4px}
+.n b{display:block;font-size:15px;margin-bottom:4px}
+.n span{font-size:14px;color:var(--mute);line-height:1.55}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#F1F5F9;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div>
+    <h1>Wardrobe Manager – ER Diagram</h1>
+    <p class="sub">12 tables · 14 relationships · MySQL schema</p>
+  </div>
+  <div class="zoom"><button id="zo">− Zoom out</button><button id="zf">Fit width</button><button id="zi">Zoom in +</button></div>
+</div>
+<div class="legend" id="legend"></div>
+<div class="wrap" id="wrap"><svg id="svg" role="img" aria-label="Entity relationship diagram of the wardrobe database"><title>Wardrobe Manager ER diagram</title></svg></div>
+<div class="notes">
+  <div class="n" style="border-top-color:#0D9488"><b>Hierarchical categories</b><span><code>Categories</code> references itself via <code>parent_category_id</code>: Clothing → Colour / Season / Type / Fabric → Blue, Winter, Jeans, Cotton.</span></div>
+  <div class="n" style="border-top-color:#E11D48"><b>Junction tables</b><span><code>ItemCategories</code>, <code>OutfitItems</code> and <code>OutfitOccasions</code> turn many-to-many links into two one-to-many links.</span></div>
+  <div class="n" style="border-top-color:#D97706"><b>Plan, wear, rate</b><span><code>OutfitPlans</code> schedules an outfit; <code>WearLogs</code> records each wear with four optional 1–5 ratings.</span></div>
+  <div class="n" style="border-top-color:#4F46E5"><b>Top-3 suggestions</b><span><code>SuggestedOutfits</code> links each ranked pick (top 3 per request) to an outfit and a wear log, with the score at that moment.</span></div>
+</div>
+<script>
+const W=240,HH=38,RH=24,X=[40,404,768,1132,1496],S='#475569';
+const G=[['#4F46E5','People & lookups'],['#0D9488','Wardrobe'],['#E11D48','Outfits'],['#D97706','Planning & feedback']];
+const J=['ItemCategories','OutfitItems','OutfitOccasions'];
+const T={
+Users:[2,70,0,[['user_id','INT','PK'],['full_name','VARCHAR'],['email','VARCHAR','UK'],['password_hash','VARCHAR'],['created_at','DATETIME']]],
+Brands:[0,470,0,[['brand_id','INT','PK'],['brand_name','VARCHAR','UK'],['website','VARCHAR']]],
+Occasions:[4,70,0,[['occasion_id','INT','PK'],['occasion_name','VARCHAR','UK'],['description','VARCHAR']]],
+Categories:[0,70,1,[['category_id','INT','PK'],['parent_category_id','INT','FK'],['category_name','VARCHAR'],['description','VARCHAR']]],
+ClothingItems:[1,320,1,[['item_id','INT','PK'],['user_id','INT','FK'],['brand_id','INT','FK'],['item_name','VARCHAR'],['size','VARCHAR'],['purchase_date','DATE'],['purchase_price','DECIMAL'],['availability_status','ENUM'],['notes','TEXT'],['image_url','VARCHAR']]],
+ItemCategories:[0,320,1,[['item_id','INT','PK FK'],['category_id','INT','PK FK']]],
+Outfits:[3,250,2,[['outfit_id','INT','PK'],['outfit_name','VARCHAR'],['description','TEXT'],['created_at','DATETIME'],['is_favorite','BOOLEAN']]],
+OutfitItems:[2,300,2,[['outfit_id','INT','PK FK'],['item_id','INT','PK FK']]],
+OutfitOccasions:[3,80,2,[['outfit_id','INT','PK FK'],['occasion_id','INT','PK FK']]],
+OutfitPlans:[4,270,3,[['plan_id','INT','PK'],['outfit_id','INT','FK'],['occasion_id','INT','FK'],['planned_date','DATE'],['plan_status','ENUM'],['notes','VARCHAR']]],
+WearLogs:[3,520,3,[['wear_log_id','BIGINT','PK'],['outfit_id','INT','FK'],['worn_at','DATETIME'],['feedback','VARCHAR'],['colour_rating','TINYINT'],['size_rating','TINYINT'],['comfort_rating','TINYINT'],['style_rating','TINYINT']]],
+SuggestedOutfits:[4,520,3,[['suggestion_id','INT','PK'],['outfit_id','INT','FK'],['wear_log_id','BIGINT','FK'],['rank_position','TINYINT'],['score','DECIMAL'],['suggested_at','DATETIME']]]
+};
+for(const k in T){const a=T[k];T[k]={n:k,x:X[a[0]],y:a[1],g:a[2],rows:a[3],h:HH+a[3].length*RH};}
+const rowY=(t,c)=>t.y+HH+t.rows.findIndex(r=>r[0]===c)*RH+RH/2;
+const R=[
+{p:'Users',pc:'user_id',c:'ClothingItems',cc:'user_id',l:'owns',m:.3},
+{p:'Brands',pc:'brand_id',c:'ClothingItems',cc:'brand_id',l:'makes',t:'zeroone'},
+{p:'ClothingItems',pc:'item_id',c:'ItemCategories',cc:'item_id',l:'tagged'},
+{p:'Categories',pc:'category_id',c:'ItemCategories',cc:'category_id',l:'classifies'},
+{p:'ClothingItems',pc:'item_id',c:'OutfitItems',cc:'item_id',l:'used_in',m:.7,py:460},
+{p:'Outfits',pc:'outfit_id',c:'OutfitItems',cc:'outfit_id',l:'holds',py:350},
+{p:'WearLogs',pc:'wear_log_id',c:'SuggestedOutfits',cc:'wear_log_id',l:'scores',m:.3},
+{p:'Outfits',pc:'outfit_id',c:'SuggestedOutfits',cc:'outfit_id',l:'suggests',m:.65,py:380},
+
+{p:'Outfits',pc:'outfit_id',c:'OutfitOccasions',cc:'outfit_id',l:'suits'},
+{p:'Occasions',pc:'occasion_id',c:'OutfitOccasions',cc:'occasion_id',l:'applies_to',m:.4},
+{p:'Outfits',pc:'outfit_id',c:'OutfitPlans',cc:'outfit_id',l:'scheduled',py:290},
+{p:'Occasions',pc:'occasion_id',c:'OutfitPlans',cc:'occasion_id',l:'for',t:'zeroone'},
+{p:'Outfits',pc:'outfit_id',c:'WearLogs',cc:'outfit_id',l:'logged'}
+];
+const ln=(a,b)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${S}" stroke-width="1.8" stroke-linecap="round"/>`;
+const ci=c=>`<circle cx="${c[0]}" cy="${c[1]}" r="4.5" fill="#fff" stroke="${S}" stroke-width="1.8"/>`;
+function mk(x,y,dx,dy,t){const P=(d,o)=>[x+dx*d-dy*o,y+dy*d+dx*o];
+ if(t==='one')return ln(P(14,-7),P(14,7))+ln(P(20,-7),P(20,7));
+ if(t==='zeroone')return ln(P(14,-7),P(14,7))+ci(P(25,0));
+ return ln(P(16,0),P(0,-8))+ln(P(16,0),P(0,8))+ci(P(25,0));}
+const pill=(cx,cy,t)=>{const w=t.length*6.9+20;return `<rect x="${cx-w/2}" y="${cy-11}" width="${w}" height="22" rx="11" fill="#fff" stroke="#94A3B8" stroke-width="1.2"/><text x="${cx}" y="${cy+4.5}" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">${t}</text>`};
+let lines='',marks='',pills='',tabs='';
+R.forEach(r=>{const p=T[r.p],c=T[r.c];let pts,ds,de,lx,ly;
+ if(p.x===c.x){const cx=p.x+W/2;
+  if(p.y<c.y){pts=[[cx,p.y+p.h],[cx,c.y]];ds=[0,1];de=[0,-1]}else{pts=[[cx,p.y],[cx,c.y+c.h]];ds=[0,-1];de=[0,1]}
+  lx=cx;ly=(pts[0][1]+pts[1][1])/2;
+ }else{const pl=p.x<c.x,xs=pl?p.x+W:p.x,xe=pl?c.x:c.x+W,ys=r.py??rowY(p,r.pc),ye=rowY(c,r.cc),a=pl?xs:xe,b=pl?xe:xs,mx=a+(r.m??.5)*(b-a);
+  pts=[[xs,ys],[mx,ys],[mx,ye],[xe,ye]];ds=[pl?1:-1,0];de=[pl?-1:1,0];lx=mx;ly=(ys+ye)/2;}
+ lines+=`<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${S}" stroke-width="1.8" stroke-linejoin="round"/>`;
+ const s=pts[0],e=pts[pts.length-1];
+ marks+=mk(s[0],s[1],ds[0],ds[1],r.t||'one')+mk(e[0],e[1],de[0],de[1],'many');
+ pills+=pill(lx,ly,r.l);
+});
+{const t=T.Categories,y1=rowY(t,'category_id'),y2=rowY(t,'parent_category_id'),x=t.x+W;
+ lines+=`<polyline points="${x},${y2} ${x+38},${y2} ${x+38},${y1} ${x},${y1}" fill="none" stroke="${S}" stroke-width="1.8" stroke-linejoin="round"/>`;
+ marks+=mk(x,y1,1,0,'zeroone')+mk(x,y2,1,0,'many');
+ const w='parent_of'.length*6.9+20;pills+=pill(x+46+w/2,(y1+y2)/2,'parent_of');}
+const kc={PK:['#FEF3C7','#92400E'],FK:['#DBEAFE','#1E40AF'],UK:['#DCFCE7','#166534']};
+for(const k in T){const t=T[k],col=G[t.g][0];
+ let s=`<g class="t"><clipPath id="c${k}"><rect x="${t.x}" y="${t.y}" width="${W}" height="${t.h}" rx="10"/></clipPath>`;
+ s+=`<rect x="${t.x}" y="${t.y}" width="${W}" height="${t.h}" rx="10" fill="#fff"/><g clip-path="url(#c${k})">`;
+ t.rows.forEach((r,i)=>{const y=t.y+HH+i*RH;s+=`<rect x="${t.x}" y="${y}" width="${W}" height="${RH}" fill="${i%2?'#F8FAFC':'#fff'}"/>`;});
+ s+=`<rect x="${t.x}" y="${t.y}" width="${W}" height="${HH}" fill="${col}"/></g>`;
+ s+=`<rect x="${t.x}" y="${t.y}" width="${W}" height="${t.h}" rx="10" fill="none" stroke="${col}" stroke-width="2"/>`;
+ s+=`<text x="${t.x+14}" y="${t.y+24.5}" font-size="16" font-weight="700" fill="#fff">${k}</text>`;
+ if(J.includes(k))s+=`<text x="${t.x+W-12}" y="${t.y+24}" text-anchor="end" font-size="11" font-weight="600" fill="#fff" opacity=".85">JUNCTION</text>`;
+ t.rows.forEach((r,i)=>{const cy=t.y+HH+i*RH+RH/2;
+  (r[2]||'').split(' ').filter(Boolean).forEach((b,j)=>{const x=t.x+10+j*23;s+=`<rect x="${x}" y="${cy-7}" width="20" height="14" rx="3" fill="${kc[b][0]}"/><text x="${x+10}" y="${cy+3.5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${kc[b][1]}">${b}</text>`;});
+  s+=`<text x="${t.x+58}" y="${cy+4.5}" font-size="13.5" font-weight="${r[2]&&r[2].includes('PK')?600:500}" fill="#0F172A">${r[0]}</text>`;
+  s+=`<text x="${t.x+W-12}" y="${cy+4}" text-anchor="end" font-size="11.5" fill="#64748B" font-family="ui-monospace,Menlo,monospace">${r[1]}</text>`;});
+ tabs+=s+'</g>';}
+const VW=X[4]+W+40,VH=Math.max(...Object.values(T).map(t=>t.y+t.h))+40;
+const svg=document.getElementById('svg');
+svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`);
+svg.insertAdjacentHTML('beforeend',lines+tabs+marks+pills);
+let sc=1;const wrap=document.getElementById('wrap');
+const apply=()=>{svg.style.width=VW*sc+'px';svg.style.height=VH*sc+'px';svg.style.display='block'};
+const fit=()=>{sc=Math.max(.45,(wrap.clientWidth-2)/VW);apply()};
+document.getElementById('zi').onclick=()=>{sc=Math.min(1.6,sc*1.2);apply()};
+document.getElementById('zo').onclick=()=>{sc=Math.max(.3,sc/1.2);apply()};
+document.getElementById('zf').onclick=fit;
+addEventListener('resize',fit);fit();
+const mini=(t)=>{const s=document.createElement('span');s.innerHTML=`<svg width="64" height="22" viewBox="0 0 64 22"><line x1="6" y1="11" x2="60" y2="11" stroke="${S}" stroke-width="1.8"/>${mk(6,11,1,0,t)}</svg>`;return s.innerHTML};
+document.getElementById('legend').innerHTML=
+`<div><h3>Table groups</h3><div class="lg">${G.map(g=>`<span class="it"><span class="sw" style="background:${g[0]}"></span>${g[1]}</span>`).join('')}</div></div>`+
+`<div><h3>Keys</h3><div class="lg"><span class="it"><span class="bd" style="background:#FEF3C7;color:#92400E">PK</span>Primary key</span><span class="it"><span class="bd" style="background:#DBEAFE;color:#1E40AF">FK</span>Foreign key</span><span class="it"><span class="bd" style="background:#DCFCE7;color:#166534">UK</span>Unique</span></div></div>`+
+`<div><h3>Relationship ends</h3><div class="lg"><span class="it">${mini('one')}Exactly one</span><span class="it">${mini('zeroone')}Zero or one</span><span class="it">${mini('many')}Zero or many</span></div></div>`+
+`<div><h3>Reading a link</h3><div class="lg"><span class="it">Parent (one side) → child (many side); the label names the relationship</span></div></div>`;
+</script>
+</body>
+</html>
